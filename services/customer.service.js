@@ -92,7 +92,7 @@ exports.triggerCall = async (payload) => {
 
     const firstName = customer.name?.split(' ')[0] || customer.name;
 
-    const payload = {
+    const aIpayload = {
       agent_id: agentId,
       recipient_phone_number: customer.phone,
       // from_phone_number: fromNumber,
@@ -105,10 +105,10 @@ exports.triggerCall = async (payload) => {
       },
     };
 
-    console.log('Triggering Bolna call with payload:', payload);
+    console.log('Triggering Bolna call with payload:', aIpayload);
 
     try {
-      const response = await bolnaApi.post('/call', payload);
+      const response = await bolnaApi.post('/call', aIpayload);
 
       const executionId = response.data?.execution_id || response.data?.run_id || response.data?.id;
 

@@ -11,7 +11,7 @@ const {
 router.post('/generate-kb', generateKnowledgebase);
 router.post('/preview-kb', previewKnowledgebase);
 router.get('/serve/{:token}', serveKnowledgebase);
-router.get('/credit-utilization/{:customerId}', getCreditUtilization);
-router.post('/customer-context', getCustomerContext);
+router.get('/credit-utilization', getCreditUtilization);
+router.get('/customer-context', getCustomerContext);
 
 module.exports = router;

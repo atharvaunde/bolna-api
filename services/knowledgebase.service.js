@@ -7,6 +7,7 @@ const RiskScores = require('../models/riskScores');
 const { generateCustomerInsights } = require('./customerInsights.service');
 const { handleError, createError } = require('../utils/error');
 const bolnaApi = require('../configs/bolna');
+const mongoose = require('mongoose');
 
 const tempStore = new Map();
 const TOKEN_TTL_MS = 10 * 60 * 1000;
@@ -198,8 +199,10 @@ exports.previewKnowledgebase = async (payload) => {
 
 exports.getCreditUtilization = async (payload) => {
   try {
-    const { customerId } = payload?.params || payload?.query || {};
+    const { customerId } =  payload?.query || {};
     const { startTime, endTime } = payload?.query;
+    console.log("Fetching Customer Utilization for customerId:", customerId);
+    
     if (!customerId) throw createError(400, 'customerId is required');
     const customer = await Customers.findOne({ customerId }).lean();
     if (!customer) throw createError(404, `Customer not found: ${customerId}`);
@@ -373,24 +376,75 @@ exports.getCreditUtilization = async (payload) => {
     );
 
     const alerts = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Credit card alerts
     creditCardDetails.forEach((c) => {
       if (c.utilizationPercent >= 90)
         alerts.push(
           `${c.productName} ending ${c.last4Digits} is at ${c.utilizationPercent}% utilization — critically high`,
         );
-      if (c.paymentDueDate) alerts.push(`${c.productName} payment due on ${c.paymentDueDate}`);
+      
+      // Check if payment is overdue or upcoming
+      const card = creditCards.find(cc => cc.productName === c.productName);
+      if (card?.metadata?.paymentDueDate) {
+        const dueDate = new Date(card.metadata.paymentDueDate);
+        dueDate.setHours(0, 0, 0, 0);
+        const daysUntilDue = Math.round((dueDate - today) / 86400000);
+        
+        if (daysUntilDue < 0) {
+          // Overdue
+          const daysOverdue = Math.abs(daysUntilDue);
+          alerts.push(
+            `⚠️ OVERDUE: ${c.productName} payment was due on ${c.paymentDueDate} (${daysOverdue} day${daysOverdue > 1 ? 's' : ''} ago)`,
+          );
+        } else if (daysUntilDue === 0) {
+          alerts.push(`🔴 URGENT: ${c.productName} payment due TODAY`);
+        } else if (daysUntilDue <= 3) {
+          alerts.push(`⚠️ ${c.productName} payment due in ${daysUntilDue} day${daysUntilDue > 1 ? 's' : ''} (${c.paymentDueDate})`);
+        } else if (daysUntilDue <= 7) {
+          alerts.push(`${c.productName} payment due on ${c.paymentDueDate}`);
+        }
+      }
     });
+
+    // Loan alerts
     loanDetails.forEach((l) => {
       if (l.latePayments > 0)
         alerts.push(
           `${l.productName} had ${l.latePayments} late EMI payment(s) in the selected period`,
         );
-      if (l.nextEmiDate)
-        alerts.push(`${l.productName} next EMI of ${l.emiAmountFormatted} due on ${l.nextEmiDate}`);
+      
+      // Check if EMI is overdue or upcoming
+      const loan = loans.find(ln => ln.productName === l.productName);
+      if (loan?.metadata?.nextEmiDate) {
+        const emiDate = new Date(loan.metadata.nextEmiDate);
+        emiDate.setHours(0, 0, 0, 0);
+        const daysUntilEmi = Math.round((emiDate - today) / 86400000);
+        
+        if (daysUntilEmi < 0) {
+          // Overdue
+          const daysOverdue = Math.abs(daysUntilEmi);
+          alerts.push(
+            `⚠️ OVERDUE: ${l.productName} EMI of ${l.emiAmountFormatted} was due on ${l.nextEmiDate} (${daysOverdue} day${daysOverdue > 1 ? 's' : ''} ago)`,
+          );
+        } else if (daysUntilEmi === 0) {
+          alerts.push(`🔴 URGENT: ${l.productName} EMI of ${l.emiAmountFormatted} due TODAY`);
+        } else if (daysUntilEmi <= 3) {
+          alerts.push(
+            `⚠️ ${l.productName} EMI of ${l.emiAmountFormatted} due in ${daysUntilEmi} day${daysUntilEmi > 1 ? 's' : ''} (${l.nextEmiDate})`,
+          );
+        } else if (daysUntilEmi <= 7) {
+          alerts.push(`${l.productName} next EMI of ${l.emiAmountFormatted} due on ${l.nextEmiDate}`);
+        }
+      }
     });
+
+    // FD maturity alerts
     fdDetails.forEach((fd) => {
       const daysToMaturity = fd.maturityDate
-        ? Math.round((new Date(fd.maturityDate) - new Date()) / 86400000)
+        ? Math.round((new Date(fd.maturityDate) - today) / 86400000)
         : null;
       if (daysToMaturity !== null && daysToMaturity <= 30 && daysToMaturity >= 0) {
         alerts.push(
@@ -431,7 +485,8 @@ exports.getCreditUtilization = async (payload) => {
 
 exports.getCustomerContext = async (payload) => {
   try {
-    const { customerId } = payload?.params || payload?.query || {};
+    const { customerId } = payload?.query || {};
+    console.log("Fetching Customer Context for customerId:", customerId);
     const { startTime, endTime } = payload?.query;
     if (!customerId) throw createError(400, 'customerId is required');
     const customer = await Customers.findOne({ customerId }).lean();

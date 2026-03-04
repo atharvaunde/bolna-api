@@ -32,7 +32,7 @@ exports.handleWebhookEvent = async (payload) => {
     // Strip undefined keys so we don't overwrite existing fields with undefined
     Object.keys(update).forEach((k) => update[k] === undefined && delete update[k]);
 
-    const result = await Calls.findOneAndUpdate({ executionId }, { $set: update }, { new: true });
+    const result = await Calls.findOneAndUpdate({ executionId }, { $set: update }, { returnDocument: 'after' });
 
     if (!result) {
       console.warn(`[BolnaWebhook] No call record found for executionId: ${executionId}`);

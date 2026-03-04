@@ -141,7 +141,7 @@ exports.calculateRisk = async (payload) => {
           volatilityScore,
         },
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     );
 
     await Customers.findByIdAndUpdate(customerId, { riskScore, riskLevel });
