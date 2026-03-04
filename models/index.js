@@ -6,10 +6,10 @@ const RiskScores = require('./riskScores');
 const Calls = require('./calls');
 
 module.exports = {
-    Users,
-    Customers,
-    Products,
-    Transactions,
-    RiskScores,
-    Calls,
+  Users,
+  Customers,
+  Products,
+  Transactions,
+  RiskScores,
+  Calls,
 };

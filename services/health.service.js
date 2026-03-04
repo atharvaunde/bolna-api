@@ -7,7 +7,12 @@ exports.pingCheck = async () => {
     let mongoStatus = 'unknown';
 
     try {
-      mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : mongoose.connection.readyState === 2 ? 'connecting' : 'disconnected';
+      mongoStatus =
+        mongoose.connection.readyState === 1
+          ? 'connected'
+          : mongoose.connection.readyState === 2
+            ? 'connecting'
+            : 'disconnected';
     } catch (err) {
       mongoStatus = 'error';
     }

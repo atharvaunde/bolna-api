@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  serveKnowledgebase, 
-  generateKnowledgebase, 
-  previewKnowledgebase, 
-  getCreditUtilization, 
-  getCustomerContext 
+const {
+  serveKnowledgebase,
+  generateKnowledgebase,
+  previewKnowledgebase,
+  getCreditUtilization,
+  getCustomerContext,
 } = require('../controllers/knowledgebase.controller');
 
 router.get('/serve/{:token}', serveKnowledgebase);

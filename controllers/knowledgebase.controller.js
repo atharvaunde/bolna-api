@@ -1,14 +1,13 @@
-const { 
-  serveKnowledgebase, 
-  generateKnowledgebase, 
-  previewKnowledgebase, 
-  getCreditUtilization, 
-  getCustomerContext 
+const {
+  serveKnowledgebase,
+  generateKnowledgebase,
+  previewKnowledgebase,
+  getCreditUtilization,
+  getCustomerContext,
 } = require('../services/knowledgebase.service');
 
 exports.serveKnowledgebase = async (req, res, next) => {
   try {
-
     const result = await serveKnowledgebase(req);
     return res.status(result.statusCode).json(result);
   } catch (error) {
