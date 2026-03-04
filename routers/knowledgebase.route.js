@@ -8,9 +8,9 @@ const {
   getCustomerContext,
 } = require('../controllers/knowledgebase.controller');
 
+router.post('/generate-kb', generateKnowledgebase);
+router.post('/preview-kb', previewKnowledgebase);
 router.get('/serve/{:token}', serveKnowledgebase);
-router.post('/generate', generateKnowledgebase);
-router.post('/preview', previewKnowledgebase);
 router.get('/credit-utilization/{:customerId}', getCreditUtilization);
 router.post('/customer-context', getCustomerContext);
 
