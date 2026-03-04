@@ -1,6 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const { connectDB } = require('./configs/database');
+const { validateEnv } = require('./utils/startup');
+
+// Validate environment variables before starting server
+validateEnv();
 
 const PORT = process.env.PORT || 3001;
 const app = express();
