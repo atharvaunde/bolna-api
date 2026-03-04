@@ -13,5 +13,8 @@
     "helmet": "^8.1.0",
     "hpp": "^0.2.3",
     "mongoose": "^9.2.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
